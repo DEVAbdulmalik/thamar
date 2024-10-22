@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const mysql = require('mysql');
 const bcrypt = require('bcryptjs');
@@ -28,14 +30,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'student_db'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 });
 
 const client = new speech.SpeechClient({
-    keyFilename: 'key.json'
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 
 db.connect((err) => {
@@ -125,24 +127,58 @@ function removeArabicDiacritics(text) {
     return text
 }
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
-    const hashedPassword = bcrypt.hashSync(password, 8);
-    res.send({ message: 'User registered successfully' });
 
- 
+    if (!name || !email || !password) {
+        return res.status(400).send({ message: 'name, email and password are required' });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 8);
+
+        db.query('SELECT id FROM users WHERE email = ?', [email], (err, results) => {
+            if (err) {
+                console.error('Error checking existing user:', err);
+                return res.status(500).send({ message: 'An error occurred while registering the user' });
+            }
+
+            if (results.length > 0) {
+                return res.status(409).send({ message: 'Email is already registered' });
+            }
+
+            db.query(
+                'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+                [name, email, hashedPassword],
+                (err) => {
+                    if (err) {
+                        if (err.code === 'ER_DUP_ENTRY') {
+                            return res.status(409).send({ message: 'Email is already registered' });
+                        }
+                        console.error('Error registering user:', err);
+                        return res.status(500).send({ message: 'An error occurred while registering the user' });
+                    }
+
+                    res.send({ message: 'User registered successfully' });
+                }
+            );
+        });
+    } catch (error) {
+        console.error('Error hashing password:', error);
+        res.status(500).send({ message: 'An error occurred while registering the user' });
+    }
 });
 
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
-    db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
+    db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
         if (err) throw err;
 
         if (results.length > 0) {
-            const comparison = bcrypt.compareSync(password, results[0].password);
+            const comparison = await bcrypt.compare(password, results[0].password);
             if (comparison) {
-                const token = jwt.sign({ id: results[0].id }, '[REDACTED]', {
+                const token = jwt.sign({ id: results[0].id }, process.env.JWT_SECRET, {
                     expiresIn: 86400 * 4
                 });
 
@@ -156,7 +192,7 @@ app.post('/login', (req, res) => {
     });
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

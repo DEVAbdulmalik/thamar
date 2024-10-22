@@ -1,0 +1,15 @@
+# Environment variables (contains secrets)
+.env
+
+# Dependencies
+node_modules
+
+# Uploaded audio files (multer destination)
+uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Google Cloud service account key
+key.json
