@@ -1,0 +1,39 @@
+{
+    "name": "Thamra | ثمار",
+    "short_name": "ثمار",
+    "description": "تطبيق يساعدك في تصحيح قراءتك للقرآن الكريم ويوفر ميزة الحلقات القرآنية الإلكترونية لتستطيع تسميع ما حفظت أينما كنت وتتنافس مع المسلمين بين جميع أنحاء العالم",
+    "background_color": "#ffffff",
+    "start_url": "https://Thamra.com/",
+    "icons": [
+        {
+            "src": "assets/images/icons/android-16x16.png",
+            "sizes": "16x16",
+            "type": "image/png",
+            "density": "0.75"
+        },
+        {
+            "src": "assets/images/icons/android-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png",
+            "density": "1.0"
+        },
+        {
+            "src": "assets/images/icons/android-150x150.png",
+            "sizes": "150x150",
+            "type": "image/png",
+            "density": "1.5"
+        },
+        {
+            "src": "assets/images/icons/android-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "density": "2.0"
+        },
+        {
+            "src": "assets/images/icons/android-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "density": "3.0"
+        }
+    ]
+}
